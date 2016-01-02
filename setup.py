@@ -11,6 +11,12 @@ setup(
         'console_scripts': [
             'git-multi=git_multi.cli:main'
         ],
+        'git_multi.commands': [
+            'register = git_multi.commands.register:main',
+            'list = git_multi.commands.items:main',
+            'init = git_multi.commands.init:main',
+            '-- = git_multi.commands.dispatch:main',
+        ],
     },
     cmdclass=versioneer.get_cmdclass()
 )
