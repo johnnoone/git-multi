@@ -1,0 +1,2 @@
+git_multi export-subst
+git_multi/_version.py export-subst

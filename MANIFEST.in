@@ -1,0 +1,3 @@
+include versioneer.py
+include git_multi
+include git_multi/_version.py
