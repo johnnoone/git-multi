@@ -12,7 +12,7 @@ def _registered_commands(group='git_multi.commands'):
 
 def dispatch(args):
     registered_commands = _registered_commands()
-    parser = argparse.ArgumentParser(prog="git_multi")
+    parser = argparse.ArgumentParser(prog="git-multi")
     parser.add_argument(
         "--version",
         action="version",

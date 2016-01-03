@@ -9,7 +9,7 @@ setup(
     package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
-            'git-multi=git_multi.cli:main'
+            'git-multi=git_multi.__main__:main'
         ],
         'git_multi.commands': [
             'register = git_multi.commands.register:main',
