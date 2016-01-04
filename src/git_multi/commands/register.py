@@ -5,7 +5,7 @@ from git_multi.conf import Settings
 
 def register(config_file, repo):
     with Settings(config_file) as settings:
-        settings.add_repository(repo)
+        settings.repositories.add(repo)
 
 
 def main(config_file, args):
