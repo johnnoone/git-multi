@@ -1,10 +1,117 @@
+from collections import defaultdict
 from .repository import Repository
 from .shell import Command
 import os.path
+import textwrap
 try:
     from configparser import RawConfigParser, DuplicateSectionError
 except:
     from ConfigParser import RawConfigParser, DuplicateSectionError
+
+
+class ConfigLexer:
+
+    def lex(self, data):
+        data = textwrap.dedent(data.strip('\n'))
+        output, section, block = [], '', ''
+        for line in data.splitlines(True):
+            if line.startswith('['):
+                block = self.drain_block(section, block, output)
+                section = line.strip()[1:-1]
+                continue
+            else:
+                block += line
+        else:
+            block = self.drain_block(section, block, output)
+        return output
+
+    __call__ = lex
+
+    def drain_block(self, section, block, output):
+        if block:
+            block = textwrap.dedent(block)
+            key, values = '', []
+            for line in block.splitlines():
+                if not line.strip():
+                    continue
+
+                if key and line[0] in (' ', '\t'):
+                    # it must be a value
+                    values.append(line.strip())
+                    pass
+                if '=' in line:
+                    if key:
+                        output.append((section, key, values))
+                        values = []
+                    key, _, val = line.partition('=')
+                    key = key.strip()
+                    val = val.strip()
+                    if val:
+                        values.append(val)
+            if key:
+                output.append((section, key, values))
+                values = []
+        return ''
+
+
+class ConfigParser:
+
+    def parse(self, data):
+        repositories = defaultdict(lambda: {
+            'work_tree': None,
+            'git_dir': None,
+            'bare': None
+        })
+        for section, key, values in data:
+            if section.startswith('repository '):
+                name = section[12:-1]
+                if key == 'work-tree':
+                    repositories[name]['work_tree'] = values[-1]
+                elif key == 'git-dir':
+                    repositories[name]['git_dir'] = values[-1]
+                elif key == 'bare':
+                    repositories[name]['bare'] = values[-1] == 'true'
+                else:
+                    raise ValueError('unknown option %s' % key)
+            else:
+                raise ValueError('unknown section %s' % section)
+
+        repositories = {Repository(name, **opts)
+                        for name, opts in repositories.items()}
+        return {
+            'repositories': repositories
+        }
+
+    __call__ = parse
+
+
+class ConfigReader:
+
+    def __init__(self):
+        self.lexer = ConfigLexer()
+        self.parser = ConfigParser()
+
+    def read(self, data):
+        data = self.lexer(data)
+        data = self.parser(data)
+        return data
+
+    def read_from_filename(self, filename):
+        with open(filename) as file:
+            data = file.read()
+            return self.read(data)
+        return data
+
+    __call__ = read
+
+
+class ConfigWriter:
+
+    def write(self, filename, conf):
+        with open(filename) as file:
+            return file.read()
+
+    __call__ = write
 
 
 class Settings:
