@@ -33,6 +33,6 @@ def dispatch(args):
         nargs=argparse.REMAINDER,
     )
 
-    args = parser.parse_args(args)
-    main = registered_commands[args.command].load()
-    main(parser.config_file, args.args)
+    ns = parser.parse_args(args)
+    main = registered_commands[ns.command].load()
+    main(ns.config_file, ns.args)

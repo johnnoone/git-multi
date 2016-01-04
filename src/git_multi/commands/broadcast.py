@@ -1,15 +1,17 @@
 import argparse
 from git_multi.conf import Settings
+from git_multi import alias
 
 
 def broadcast(config_file, args):
     settings = Settings(config_file)
 
-    procs = {}
+    procs = []
     for repo in settings.repositories:
+        cmd = ['git'] + alias.expand(*args)
         cwd = repo.git_dir if repo.bare else repo.work_tree
-        procs[repo.name] = settings.Command(['git'] + args, cwd=cwd)
-    for name, proc in procs.items():
+        procs.append((repo.name, settings.Command(*cmd, cwd=cwd)))
+    for name, proc in procs:
         proc.wait()
         yield name, proc.result
 

@@ -1,9 +1,7 @@
-import pytest
-from git_multi.commands import broadcast
 import textwrap
+from git_multi.commands import broadcast, init
 
 
-@pytest.mark.xfail
 def test_broadcast(tmpdir):
     config_file = tmpdir.join('multi.cfg')
     config_file.write(textwrap.dedent('''\
@@ -15,10 +13,7 @@ def test_broadcast(tmpdir):
         git-dir = bar.git
         bare = true
     '''))
-    for name, res in broadcast(config_file.strpath, ['init']):
-        print(name)
-        print('stdout:')
-        print(res.stdout.decode('utf-8'))
-        print('stderr:')
-        print(res.stderr.decode('utf-8'))
-    assert False
+    for name, res in init(config_file.strpath):
+        assert res.returncode == 0
+    for name, res in broadcast(config_file.strpath, ['log']):
+        assert res.returncode == 128, 'no commit'

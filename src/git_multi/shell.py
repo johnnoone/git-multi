@@ -6,7 +6,7 @@ Result = namedtuple('Result', 'cmd stdout stderr returncode')
 
 class Command:
 
-    def __init__(self, cmd, **kwargs):
+    def __init__(self, *cmd, **kwargs):
         self.cmd = cmd
         self.kwargs = kwargs
         kwargs.setdefault('stdout', PIPE)
@@ -31,6 +31,11 @@ class Command:
     @property
     def returncode(self):
         return self.proc.returncode
+
+    @property
+    def ok(self):
+        if self.proc.returncode is not None:
+            return self.proc.returncode is True
 
     @property
     def result(self):

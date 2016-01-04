@@ -6,7 +6,7 @@ from git_multi.conf import Settings
 def init(config_file):
     settings = Settings(config_file)
 
-    procs = {}
+    procs = []
     for repo in settings.repositories:
         work_tree, git_dir, bare = repo.work_tree, repo.git_dir, repo.bare
         if bare:
@@ -15,8 +15,8 @@ def init(config_file):
             cmd = ['git', 'init', '--separate-git-dir', git_dir, work_tree]
         else:
             cmd = ['git', 'init', work_tree]
-        procs[repo.name] = settings.Command(cmd)
-    for name, proc in procs.items():
+        procs.append((repo.name, settings.Command(*cmd)))
+    for name, proc in procs:
         proc.wait()
         yield name, proc.result
 

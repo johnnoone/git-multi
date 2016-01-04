@@ -57,6 +57,6 @@ class Settings:
         self.config.set(section, 'git-dir', repo.git_dir)
         self.config.set(section, 'bare', 'true' if repo.bare else 'false')
 
-    def Command(self, cmd, **kwargs):
+    def Command(self, *cmd, **kwargs):
         cwd = os.path.join(self.cwd, kwargs.pop('cwd', '.'))
-        return Command(cmd, cwd=cwd, **kwargs)
+        return Command(*cmd, cwd=cwd, **kwargs)
