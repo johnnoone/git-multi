@@ -56,6 +56,16 @@ class ConfigLexer:
 
 class ConfigParser:
 
+    def parse_repository(self, key, values, repository):
+        if key == 'work-tree':
+            repository['work_tree'] = values[-1]
+        elif key == 'git-dir':
+            repository['git_dir'] = values[-1]
+        elif key == 'bare':
+            repository['bare'] = values[-1] == 'true'
+        else:
+            raise ValueError('unknown option %s' % key)
+
     def parse(self, data):
         repositories = defaultdict(lambda: {
             'work_tree': None,
@@ -65,14 +75,9 @@ class ConfigParser:
         for section, key, values in data:
             if section.startswith('repository '):
                 name = section[12:-1]
-                if key == 'work-tree':
-                    repositories[name]['work_tree'] = values[-1]
-                elif key == 'git-dir':
-                    repositories[name]['git_dir'] = values[-1]
-                elif key == 'bare':
-                    repositories[name]['bare'] = values[-1] == 'true'
-                else:
-                    raise ValueError('unknown option %s' % key)
+                repository = repositories[name]
+                self.parse_repository(key, values, repository)
+
             else:
                 raise ValueError('unknown section %s' % section)
 
@@ -107,11 +112,33 @@ class ConfigReader:
 
 class ConfigWriter:
 
-    def write(self, filename, conf):
-        with open(filename) as file:
-            return file.read()
+    def write(self, conf):
 
+        def clean(value):
+            if value is True:
+                return 'true'
+            if value is False:
+                return 'false'
+            if value is None:
+                return 'null'
+            return value
+
+        buf = ''
+        for repository in conf['repositories']:
+            buf += '[repository "%s"]\n' % repository.name
+            if repository.work_tree is not None:
+                buf += '\twork-tree = %s\n' % repository.work_tree
+            if repository.git_dir is not None:
+                buf += '\tgit-dir = %s\n' % repository.git_dir
+            if repository.bare is not None:
+                buf += '\tbare = %s\n' % clean(repository.bare)
+        return buf
     __call__ = write
+
+    def write_into_filename(self, filename, conf):
+        with open(filename, 'w') as file:
+            data = self.write(conf)
+            file.write(data)
 
 
 class Settings:

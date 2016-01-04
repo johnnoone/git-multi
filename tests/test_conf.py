@@ -1,4 +1,5 @@
-from git_multi.conf import ConfigLexer, ConfigParser, ConfigReader
+from git_multi.conf import (ConfigLexer, ConfigParser,
+                            ConfigReader, ConfigWriter)
 from git_multi.repository import Repository
 
 
@@ -68,3 +69,28 @@ def test_reader():
                        bare=True)
         }
     }
+
+
+def test_writer():
+    writer = ConfigWriter()
+    output = writer({
+        'repositories': [
+            Repository(name="foo",
+                       work_tree='foo',
+                       git_dir='foo/.git',
+                       bare=False),
+            Repository(name="bar",
+                       work_tree=None,
+                       git_dir='bar.git',
+                       bare=True)
+        ]
+    })
+    assert output == '\n'.join([
+        '[repository "foo"]',
+        '\twork-tree = foo',
+        '\tgit-dir = foo/.git',
+        '\tbare = false',
+        '[repository "bar"]',
+        '\tgit-dir = bar.git',
+        '\tbare = true'
+    ]) + '\n'
