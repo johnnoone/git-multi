@@ -17,8 +17,9 @@ class Command:
     def poll(self):
         return self.proc.poll
 
-    def wait(self, timeout=None):
-        return self.proc.wait(timeout)
+    def wait(self):
+        # TODO implement timeout... (python3.3 feature)
+        return self.proc.wait()
 
     @property
     def stdout(self):
